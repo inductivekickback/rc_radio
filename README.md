@@ -99,7 +99,7 @@ void rc_radio_handler(rc_radio_event_t event, const void * const p_context)
   };
 }
 ```
-The transmitter also decides which "transmitter channel" to use (e.g. RC_RADIO_TRANSMITTER_CHANNEL_D) as well as the transmit frequency in hertz. Note that when operating as a transmitter, the most recent payload will be reused automatically as needed; this allows the rc_radio_data_set to be called at a lower frequency than the transmit frequency.
+The transmitter also decides which "transmitter channel" to use (e.g. RC_RADIO_TRANSMITTER_CHANNEL_D) as well as the transmit frequency in hertz. Note that when operating as a transmitter, the most recent payload will be reused automatically as needed; this allows the `rc_radio_data_set` function to be called at a lower frequency than the transmit frequency.
 
 ### Operation
 The transmit frequency is converted to a TRANSMIT_INTERVAL_US value. The transmitter uses this interval to trigger its timer's Capture Compare channel 0 (CC0) interrupt. The payload is written to the nrf_esb library during this interrupt to trigger the transmission. The receiver can't compute the TRANSMIT_INTERVAL_US until after it has binded to a transmitter. It then configures its timer to trigger its CC0 interrupt RX_WIDENING_US microseconds before it expects the transmitter to transmit.
