@@ -17,7 +17,7 @@
 
 typedef enum
 {
-    JOYSTICK_PIN_0        = SAADC_CH_PSELP_PSELP_AnalogInput0, // P0.2 (XL2)
+    JOYSTICK_PIN_0        = SAADC_CH_PSELP_PSELP_AnalogInput0, // P0.2
     JOYSTICK_PIN_1        = SAADC_CH_PSELP_PSELP_AnalogInput1, // P0.3
     JOYSTICK_PIN_2        = SAADC_CH_PSELP_PSELP_AnalogInput2, // P0.4
     JOYSTICK_PIN_3        = SAADC_CH_PSELP_PSELP_AnalogInput3, // P0.5
