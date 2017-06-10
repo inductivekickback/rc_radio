@@ -1,6 +1,10 @@
 /**
  * A simple wrapper that uses a timer and the PPI to trigger ADC reads. The
  * values are scaled before the joystick_event_handler is called.
+ * 
+ * Sometimes wiring is easier if one of the joysticks is mounted upside down.
+ * The INVERT_L_X_AXIS, INVERT_L_Y_AXIS, INVERT_R_X_AXIS, and/or
+ * INVERT_R_Y_AXIS symbols can be set to 1 in the Makefile to correct for this.
  */
 #ifndef JOYSTICK_H
 #define JOYSTICK_H
@@ -10,7 +14,6 @@
 
 
 #define JOYSTICK_MIN_VALUE      (0UL)
-#define JOYSTICK_NEUTRAL_VALUE  (50UL)
 #define JOYSTICK_MAX_VALUE      (100UL)
 #define JOYSTICK_INVALID_VALUE  (0xFFUL)
 

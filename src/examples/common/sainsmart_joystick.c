@@ -7,6 +7,24 @@
 #include "joystick.h"
 
 
+#ifndef INVERT_L_X_AXIS
+#define INVERT_L_X_AXIS 0
+#error Nope.
+#endif
+
+#ifndef INVERT_L_Y_AXIS
+#define INVERT_L_Y_AXIS 0
+#endif
+
+#ifndef INVERT_R_X_AXIS
+#define INVERT_R_X_AXIS 0
+#endif
+
+#ifndef INVERT_R_Y_AXIS
+#define INVERT_R_Y_AXIS 0
+#endif
+
+
 #define JOYSTICK_MAX_CHANNELS     (4UL)
 
 #define SAINSMART_MIN_VALUE        (0UL)
@@ -90,14 +108,26 @@ static void m_saadc_callback(nrf_drv_saadc_evt_t const * p_event)
     {
         ret_code_t err_code;
         uint32_t   i = 0;
-        uint8_t    l_x, l_y, r_x, r_y;
+        uint32_t   l_x, l_y, r_x, r_y;
 
         err_code = nrf_drv_saadc_buffer_convert(p_event->data.done.p_buffer, m_enabled_channels);
         APP_ERROR_CHECK(err_code);
 
         if (m_l_x_enabled)
         {
-        	l_x = PAM(p_event->data.done.p_buffer[i]);
+            l_x = p_event->data.done.p_buffer[i];
+#if INVERT_L_X_AXIS
+            if (l_x >= SAINSMART_MAX_VALUE)
+            {
+                l_x = 0;
+            }
+            else
+            {
+                l_x = PAM(SAINSMART_MAX_VALUE - l_x);
+            }
+#else
+        	l_x = PAM(l_x);
+#endif
         	i++;
         }
         else
@@ -107,7 +137,19 @@ static void m_saadc_callback(nrf_drv_saadc_evt_t const * p_event)
 
         if (m_l_y_enabled)
         {
-        	l_y = PAM(p_event->data.done.p_buffer[i]);
+        	l_y = p_event->data.done.p_buffer[i];
+#if INVERT_L_Y_AXIS
+            if (l_y >= SAINSMART_MAX_VALUE)
+            {
+                l_y = 0;
+            }
+            else
+            {
+                l_y = PAM(SAINSMART_MAX_VALUE - l_y);
+            }
+#else
+            l_y = PAM(l_y);
+#endif
         	i++;
         }
         else
@@ -117,22 +159,46 @@ static void m_saadc_callback(nrf_drv_saadc_evt_t const * p_event)
 
         if (m_r_x_enabled)
         {
-        	r_x = PAM(p_event->data.done.p_buffer[i]);
-        	i++;
+            r_x = p_event->data.done.p_buffer[i];
+#if INVERT_R_X_AXIS
+            if (r_x >= SAINSMART_MAX_VALUE)
+            {
+                r_x = 0;
+            }
+            else
+            {
+                r_x = PAM(SAINSMART_MAX_VALUE - r_x);
+            }
+#else
+            r_x = PAM(r_x);
+#endif
+            i++;
         }
         else
         {
-        	r_x = JOYSTICK_INVALID_VALUE;
+            r_x = JOYSTICK_INVALID_VALUE;
         }
 
         if (m_r_y_enabled)
         {
-        	r_y = PAM(p_event->data.done.p_buffer[i]);
-        	i++;
+            r_y = p_event->data.done.p_buffer[i];
+#if INVERT_R_Y_AXIS
+            if (r_y >= SAINSMART_MAX_VALUE)
+            {
+                r_y = 0;
+            }
+            else
+            {
+                r_y = PAM(SAINSMART_MAX_VALUE - r_y);
+            }
+#else
+            r_y = PAM(r_y);
+#endif
+            i++;
         }
         else
         {
-        	r_y = JOYSTICK_INVALID_VALUE;
+            r_y = JOYSTICK_INVALID_VALUE;
         }
 
         m_handler(l_x, l_y, r_x, r_y);
@@ -285,5 +351,3 @@ uint32_t joystick_init(uint8_t timer_instance_index,
 
     return NRF_SUCCESS;
 }
-
-
