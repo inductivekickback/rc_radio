@@ -149,7 +149,16 @@ static void m_timer_handler(nrf_timer_event_t event_type, void * p_context)
             // Writing a payload starts the transmission immediately.
             if (RC_RADIO_STATE_BINDING == m_state)
             {
-                APP_ERROR_CHECK(m_write_bind_info_pl());
+                uint32_t err_code = m_write_bind_info_pl();
+
+                if (NRF_ERROR_NO_MEM == err_code)
+                {
+                    nrf_esb_flush_tx();
+                }
+                else
+                {
+                    APP_ERROR_CHECK(err_code);
+                }
             }
             else
             {
@@ -449,7 +458,7 @@ static uint32_t m_esb_init(void)
     nrf_esb_config.tx_output_power    = RC_RADIO_BINDING_TX_POWER;
     nrf_esb_config.retransmit_count   = 0;
     nrf_esb_config.radio_irq_priority = 0;
-    nrf_esb_config.event_irq_priority = 1;
+    nrf_esb_config.event_irq_priority = TIMER_ISR_PRIORITY;
 
     err_code = nrf_esb_init(&nrf_esb_config);
     if (NRF_SUCCESS != err_code)
