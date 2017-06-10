@@ -1,6 +1,9 @@
 # The PROJECT_NAME can be changed arbitrarily (it does not depend on anything).
 PROJECT_NAME := poly_tx
 
+SHAREDFLAGS := -DINVERT_L_X_AXIS=1 \
+	-DINVERT_R_Y_AXIS=1
+
 # The LINKER_SCRIPT is usually in the same directory as the Makefile.
 LINKER_SCRIPT := poly_tx_gcc_nrf52.ld
 
@@ -136,6 +139,7 @@ SRC_FILES += \
 	$(PROJ_DIR)/main.c \
 	$(PROJ_DIR)/../common/sainsmart_joystick.c \
 	$(PROJ_DIR)/../../rc_radio.c \
+	$(PROJ_DIR)/../common/utility.c \
 	$(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \
 	$(SDK_ROOT)/external/segger_rtt/SEGGER_RTT.c \
 	$(SDK_ROOT)/external/segger_rtt/SEGGER_RTT_printf.c \
