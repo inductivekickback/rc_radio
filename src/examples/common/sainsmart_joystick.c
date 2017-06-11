@@ -9,7 +9,6 @@
 
 #ifndef INVERT_L_X_AXIS
 #define INVERT_L_X_AXIS 0
-#error Nope.
 #endif
 
 #ifndef INVERT_L_Y_AXIS
