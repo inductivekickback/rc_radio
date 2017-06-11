@@ -16,6 +16,7 @@
 #include "servo.h"
 #include "rc_radio.h"
 #include "brushed_dc_motor.h"
+#include "utility.h"
 
 
 #define RADIO_TIMER_INSTANCE    (0UL)
@@ -24,23 +25,32 @@
 
 #define BOUND_LED_PIN           (7UL)
 
-#define L_AIL_SERVO_PIN         (31UL)
-#define R_AIL_SERVO_PIN         (30UL)
-#define ELEVATOR_SERVO_PIN      (29UL)
-#define PROP_MOTOR_PIN          (28UL)
+#define YAW_SERVO_PIN           (31UL)
+#define ROLL_SERVO_PIN          (30UL)
+#define PITCH_SERVO_PIN         (29UL)
+#define THROTTLE_PIN            (28UL)
 
-#define L_AIL_SERVO_CHAN        (0UL)
-#define R_AIL_SERVO_CHAN        (1UL)
-#define ELEVATOR_SERVO_CHAN     (2UL)
-#define PROP_MOTOR_CHAN         (0UL)
+#define YAW_SERVO_CHAN          (0UL)
+#define ROLL_SERVO_CHAN         (1UL)
+#define PITCH_SERVO_CHAN        (2UL)
+
+#define THROTTLE_CHAN           (0UL)
 
 // Don't allow the servos to swing further than MAX_SERVO_DELTA
 // in either direction from SERVO_NEUTRAL_VALUE.
 #define MAX_SERVO_DELTA         (15UL)
 
-// Don't consider the throttle to be non-zero until it reaches
-// (JOYSTICK_NEUTRAL_VALUE + THROTTLE_SAFETY_MARGIN).
-#define THROTTLE_SAFETY_MARGIN  (10UL)
+#ifndef INVERT_ROLL
+#define INVERT_ROLL 0
+#endif
+
+#ifndef INVERT_YAW
+#define INVERT_YAW 0
+#endif
+
+#ifndef INVERT_PITCH
+#define INVERT_PITCH 0
+#endif
 
 
 static servo_group_t            m_servo_group;
@@ -52,22 +62,22 @@ static void m_controls_reset(void)
     uint32_t err_code;
 
     err_code = servo_value_set(&m_servo_group,
-                                   L_AIL_SERVO_CHAN,
+                                   ROLL_SERVO_CHAN,
                                    SERVO_NEUTRAL_VALUE);
     APP_ERROR_CHECK(err_code);
 
     err_code = servo_value_set(&m_servo_group,
-                                   R_AIL_SERVO_CHAN,
+                                   PITCH_SERVO_CHAN,
                                    SERVO_NEUTRAL_VALUE);
     APP_ERROR_CHECK(err_code);
 
     err_code = servo_value_set(&m_servo_group,
-                                   ELEVATOR_SERVO_CHAN,
+                                   YAW_SERVO_CHAN,
                                    SERVO_NEUTRAL_VALUE);
     APP_ERROR_CHECK(err_code);
 
     err_code = brushed_dc_motor_value_set(&m_brushed_dc_motor_group,
-                                              PROP_MOTOR_CHAN,
+                                              THROTTLE_CHAN,
                                               BRUSHED_DC_MOTOR_MIN_VALUE);
     APP_ERROR_CHECK(err_code);
 
@@ -75,47 +85,32 @@ static void m_controls_reset(void)
 }
 
 
-static inline uint8_t m_pam(uint8_t value, uint8_t min, uint8_t max)
-{
-    return ((value - min) * 100 / (max - min));
-}
-
-
-static inline uint8_t m_map(uint8_t value, uint8_t min, uint8_t max)
-{
-    return (value * (max - min) / 100 + min);
-}
-
-
-static void m_ailerons_set(uint8_t raw_roll)
+static void m_roll_set(uint8_t raw_roll)
 {
     uint32_t err_code;
     uint8_t  roll;
 
+#if INVERT_ROLL
     raw_roll = (JOYSTICK_MAX_VALUE - raw_roll);
+#endif
 
-    if (JOYSTICK_NEUTRAL_VALUE < raw_roll)
+    if (SERVO_NEUTRAL_VALUE < raw_roll)
     {
-        roll = m_pam(raw_roll, JOYSTICK_NEUTRAL_VALUE, JOYSTICK_MAX_VALUE);
-        roll = m_map(roll,
+        roll = pam(raw_roll, SERVO_NEUTRAL_VALUE, SERVO_MAX_VALUE);
+        roll = map(roll,
                          SERVO_NEUTRAL_VALUE,
                          (SERVO_NEUTRAL_VALUE + MAX_SERVO_DELTA));
     }
     else
     {
-        roll = m_pam(raw_roll, JOYSTICK_MIN_VALUE, JOYSTICK_NEUTRAL_VALUE);
-        roll = m_map(roll,
+        roll = pam(raw_roll, SERVO_MIN_VALUE, SERVO_NEUTRAL_VALUE);
+        roll = map(roll,
                          (SERVO_NEUTRAL_VALUE - MAX_SERVO_DELTA),
                          SERVO_NEUTRAL_VALUE);
     }
 
     err_code = servo_value_set(&m_servo_group,
-                                   L_AIL_SERVO_CHAN,
-                                   roll);
-    APP_ERROR_CHECK(err_code);
-
-    err_code = servo_value_set(&m_servo_group,
-                                   R_AIL_SERVO_CHAN,
+                                   ROLL_SERVO_CHAN,
                                    roll);
     APP_ERROR_CHECK(err_code);
 
@@ -123,28 +118,32 @@ static void m_ailerons_set(uint8_t raw_roll)
 }
 
 
-static void m_elevator_set(uint8_t raw_pitch)
+static void m_pitch_set(uint8_t raw_pitch)
 {
     uint32_t err_code;
     uint8_t  pitch;
 
-    if (JOYSTICK_NEUTRAL_VALUE < raw_pitch)
+#if INVERT_PITCH
+    raw_pitch = (JOYSTICK_MAX_VALUE - raw_pitch);
+#endif
+
+    if (SERVO_NEUTRAL_VALUE < raw_pitch)
     {
-        pitch = m_pam(raw_pitch, JOYSTICK_NEUTRAL_VALUE, JOYSTICK_MAX_VALUE);
-        pitch = m_map(pitch,
+        pitch = pam(raw_pitch, SERVO_NEUTRAL_VALUE, SERVO_MAX_VALUE);
+        pitch = map(pitch,
                          SERVO_NEUTRAL_VALUE,
                          (SERVO_NEUTRAL_VALUE + MAX_SERVO_DELTA));
     }
     else
     {
-        pitch = m_pam(raw_pitch, JOYSTICK_MIN_VALUE, JOYSTICK_NEUTRAL_VALUE);
-        pitch = m_map(pitch,
+        pitch = pam(raw_pitch, SERVO_MIN_VALUE, SERVO_NEUTRAL_VALUE);
+        pitch = map(pitch,
                          (SERVO_NEUTRAL_VALUE - MAX_SERVO_DELTA),
                          SERVO_NEUTRAL_VALUE);
     }
 
     err_code = servo_value_set(&m_servo_group,
-                                   ELEVATOR_SERVO_CHAN,
+                                   PITCH_SERVO_CHAN,
                                    pitch);
     APP_ERROR_CHECK(err_code);
 
@@ -152,27 +151,50 @@ static void m_elevator_set(uint8_t raw_pitch)
 }
 
 
-static void m_propeller_set(uint8_t raw_throttle)
+static void m_yaw_set(uint8_t raw_yaw)
+{
+    uint32_t err_code;
+    uint8_t  yaw;
+
+#if INVERT_YAW
+    raw_yaw = (JOYSTICK_MAX_VALUE - raw_yaw);
+#endif
+
+    if (SERVO_NEUTRAL_VALUE < raw_yaw)
+    {
+        yaw = pam(raw_yaw, SERVO_NEUTRAL_VALUE, SERVO_MAX_VALUE);
+        yaw = map(yaw,
+                     SERVO_NEUTRAL_VALUE,
+                     (SERVO_NEUTRAL_VALUE + MAX_SERVO_DELTA));
+    }
+    else
+    {
+        yaw = pam(raw_yaw, SERVO_MIN_VALUE, SERVO_NEUTRAL_VALUE);
+        yaw = map(yaw,
+                     (SERVO_NEUTRAL_VALUE - MAX_SERVO_DELTA),
+                     SERVO_NEUTRAL_VALUE);
+    }
+
+    err_code = servo_value_set(&m_servo_group,
+                                   YAW_SERVO_CHAN,
+                                   yaw);
+    APP_ERROR_CHECK(err_code);
+
+    NRF_LOG_INFO("  Yaw: (%d) -> (%d)\r\n",  raw_yaw, yaw);
+}
+
+
+static void m_throttle_set(uint8_t raw_throttle)
 {
     uint32_t err_code;
     uint8_t  throttle;
 
-    if ((JOYSTICK_NEUTRAL_VALUE + THROTTLE_SAFETY_MARGIN) < raw_throttle)
-    {
-        throttle = m_pam(raw_throttle,
-                             JOYSTICK_NEUTRAL_VALUE,
-                             JOYSTICK_MAX_VALUE);
-        throttle = m_map(throttle,
-                             BRUSHED_DC_MOTOR_MIN_VALUE,
-                             BRUSHED_DC_MOTOR_MAX_VALUE);
-    }
-    else
-    {
-        throttle = 0;
-    }
+    throttle = map(raw_throttle,
+                       BRUSHED_DC_MOTOR_MIN_VALUE,
+                       BRUSHED_DC_MOTOR_MAX_VALUE);
 
     err_code = brushed_dc_motor_value_set(&m_brushed_dc_motor_group,
-                                              PROP_MOTOR_CHAN,
+                                              THROTTLE_CHAN,
                                               throttle);
     APP_ERROR_CHECK(err_code);
 
@@ -211,9 +233,10 @@ static void m_rc_radio_handler(rc_radio_event_t event, const void * const p_cont
         nrf_gpio_pin_clear(BOUND_LED_PIN);
         NRF_LOG_INFO("Data recieved:\r\n");
 
-        m_ailerons_set(p_rc_data->roll);
-        m_elevator_set(p_rc_data->pitch);
-        m_propeller_set(p_rc_data->throttle);
+        m_roll_set(p_rc_data->roll);
+        m_pitch_set(p_rc_data->pitch);
+        m_throttle_set(p_rc_data->throttle);
+        m_yaw_set(p_rc_data->yaw);
     }
         break;
     case RC_RADIO_EVENT_PACKET_DROPPED:
@@ -244,15 +267,15 @@ int main(void)
 
     err_code = servo_group_init(&m_servo_group,
                                     SERVO_PWM_INSTANCE,
-                                    L_AIL_SERVO_PIN,
-                                    R_AIL_SERVO_PIN,
-                                    ELEVATOR_SERVO_PIN,
+                                    YAW_SERVO_PIN,
+                                    ROLL_SERVO_PIN,
+                                    PITCH_SERVO_PIN,
                                     SERVO_PIN_NOT_USED);
     APP_ERROR_CHECK(err_code);
 
     err_code = brushed_dc_motor_group_init(&m_brushed_dc_motor_group,
                                               MOTOR_PWM_INSTANCE,
-                                              PROP_MOTOR_PIN,
+                                              THROTTLE_PIN,
                                               BRUSHED_DC_MOTOR_PIN_NOT_USED,
                                               BRUSHED_DC_MOTOR_PIN_NOT_USED,
                                               BRUSHED_DC_MOTOR_PIN_NOT_USED);
