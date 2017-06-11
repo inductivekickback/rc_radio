@@ -27,7 +27,7 @@
 #define JOYSTICK_MAX_CHANNELS     (4UL)
 
 #define SAINSMART_MIN_VALUE        (0UL)
-#define SAINSMART_MAX_VALUE        (3300UL)
+#define SAINSMART_MAX_VALUE        (3120UL)
 #define SAINSMART_NEUTRAL_VALUE    (1620UL)
 
 
@@ -115,15 +115,13 @@ static void m_saadc_callback(nrf_drv_saadc_evt_t const * p_event)
         if (m_l_x_enabled)
         {
             l_x = p_event->data.done.p_buffer[i];
+
+            if (l_x > SAINSMART_MAX_VALUE)
+            {
+                l_x = SAINSMART_MAX_VALUE;
+            }
 #if INVERT_L_X_AXIS
-            if (l_x >= SAINSMART_MAX_VALUE)
-            {
-                l_x = 0;
-            }
-            else
-            {
-                l_x = PAM(SAINSMART_MAX_VALUE - l_x);
-            }
+            l_x = PAM(SAINSMART_MAX_VALUE - l_x);
 #else
         	l_x = PAM(l_x);
 #endif
@@ -136,16 +134,14 @@ static void m_saadc_callback(nrf_drv_saadc_evt_t const * p_event)
 
         if (m_l_y_enabled)
         {
-        	l_y = p_event->data.done.p_buffer[i];
+            l_y = p_event->data.done.p_buffer[i];
+
+            if (l_y > SAINSMART_MAX_VALUE)
+            {
+                l_y = SAINSMART_MAX_VALUE;
+            }
 #if INVERT_L_Y_AXIS
-            if (l_y >= SAINSMART_MAX_VALUE)
-            {
-                l_y = 0;
-            }
-            else
-            {
-                l_y = PAM(SAINSMART_MAX_VALUE - l_y);
-            }
+            l_y = PAM(SAINSMART_MAX_VALUE - l_y);
 #else
             l_y = PAM(l_y);
 #endif
@@ -159,15 +155,13 @@ static void m_saadc_callback(nrf_drv_saadc_evt_t const * p_event)
         if (m_r_x_enabled)
         {
             r_x = p_event->data.done.p_buffer[i];
+
+            if (r_x > SAINSMART_MAX_VALUE)
+            {
+                r_x = SAINSMART_MAX_VALUE;
+            }
 #if INVERT_R_X_AXIS
-            if (r_x >= SAINSMART_MAX_VALUE)
-            {
-                r_x = 0;
-            }
-            else
-            {
-                r_x = PAM(SAINSMART_MAX_VALUE - r_x);
-            }
+            r_x = PAM(SAINSMART_MAX_VALUE - r_x);
 #else
             r_x = PAM(r_x);
 #endif
@@ -181,15 +175,13 @@ static void m_saadc_callback(nrf_drv_saadc_evt_t const * p_event)
         if (m_r_y_enabled)
         {
             r_y = p_event->data.done.p_buffer[i];
+
+            if (r_y > SAINSMART_MAX_VALUE)
+            {
+                r_y = SAINSMART_MAX_VALUE;
+            }
 #if INVERT_R_Y_AXIS
-            if (r_y >= SAINSMART_MAX_VALUE)
-            {
-                r_y = 0;
-            }
-            else
-            {
-                r_y = PAM(SAINSMART_MAX_VALUE - r_y);
-            }
+            r_y = PAM(SAINSMART_MAX_VALUE - r_y);
 #else
             r_y = PAM(r_y);
 #endif
