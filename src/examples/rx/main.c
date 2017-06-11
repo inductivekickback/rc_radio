@@ -15,13 +15,12 @@
 #include "joystick.h"
 #include "servo.h"
 #include "rc_radio.h"
-#include "brushed_dc_motor.h"
 #include "utility.h"
 
 
 #define RADIO_TIMER_INSTANCE    (0UL)
 #define SERVO_PWM_INSTANCE      (0UL)
-#define MOTOR_PWM_INSTANCE      (1UL)
+#define THROTTLE_PWM_INSTANCE   (1UL)
 
 #define BOUND_LED_PIN           (7UL)
 
@@ -40,6 +39,7 @@
 // in either direction from SERVO_NEUTRAL_VALUE.
 #define MAX_SERVO_DELTA         (15UL)
 
+
 #ifndef INVERT_ROLL
 #define INVERT_ROLL 0
 #endif
@@ -52,9 +52,40 @@
 #define INVERT_PITCH 0
 #endif
 
+#ifndef BDCM
+#define BDCM 0
+#endif
 
-static servo_group_t            m_servo_group;
+#ifndef ESC
+#define ESC 0
+#endif
+
+#if (0 == BDCM)
+  #if (0 == ESC)
+    #error Either BDCM or ESC needs to be specified.
+  #endif
+#endif
+
+#if BDCM
+  #if ESC
+    #error Either BDCM or ESC needs to be specified but not both.
+  #endif
+#endif
+
+#if BDCM
+#include "brushed_dc_motor.h"
+#else
+#include "electronic_speed_controller.h"
+#endif
+
+
+static servo_group_t m_servo_group;
+
+#if BDCM
 static brushed_dc_motor_group_t m_brushed_dc_motor_group;
+#else
+static esc_throttle_group_t     m_esc_group;
+#endif
 
 
 static void m_controls_reset(void)
@@ -76,10 +107,17 @@ static void m_controls_reset(void)
                                    SERVO_NEUTRAL_VALUE);
     APP_ERROR_CHECK(err_code);
 
+#if BDCM
     err_code = brushed_dc_motor_value_set(&m_brushed_dc_motor_group,
                                               THROTTLE_CHAN,
                                               BRUSHED_DC_MOTOR_MIN_VALUE);
     APP_ERROR_CHECK(err_code);
+#else
+    err_code = esc_throttle_value_set(&m_esc_group,
+                                              THROTTLE_CHAN,
+                                              ESC_THROTTLE_MIN_VALUE);
+    APP_ERROR_CHECK(err_code);
+#endif
 
     NRF_LOG_INFO("Controls reset.\r\n");
 }
@@ -189,6 +227,7 @@ static void m_throttle_set(uint8_t raw_throttle)
     uint32_t err_code;
     uint8_t  throttle;
 
+#if BDCM
     throttle = map(raw_throttle,
                        BRUSHED_DC_MOTOR_MIN_VALUE,
                        BRUSHED_DC_MOTOR_MAX_VALUE);
@@ -197,6 +236,16 @@ static void m_throttle_set(uint8_t raw_throttle)
                                               THROTTLE_CHAN,
                                               throttle);
     APP_ERROR_CHECK(err_code);
+#else
+    throttle = map(raw_throttle,
+                       ESC_THROTTLE_MIN_VALUE,
+                       ESC_THROTTLE_MAX_VALUE);
+
+    err_code = esc_throttle_value_set(&m_esc_group,
+                                          THROTTLE_CHAN,
+                                          throttle);
+    APP_ERROR_CHECK(err_code);
+#endif
 
     NRF_LOG_INFO("  Throttle: (%d) -> (%d)\r\n",  raw_throttle, throttle);
 }
@@ -273,13 +322,23 @@ int main(void)
                                     SERVO_PIN_NOT_USED);
     APP_ERROR_CHECK(err_code);
 
+#if BDCM
     err_code = brushed_dc_motor_group_init(&m_brushed_dc_motor_group,
-                                              MOTOR_PWM_INSTANCE,
+                                              THROTTLE_PWM_INSTANCE,
                                               THROTTLE_PIN,
                                               BRUSHED_DC_MOTOR_PIN_NOT_USED,
                                               BRUSHED_DC_MOTOR_PIN_NOT_USED,
                                               BRUSHED_DC_MOTOR_PIN_NOT_USED);
     APP_ERROR_CHECK(err_code);
+#else
+    err_code = esc_throttle_group_init(&m_esc_group,
+                                           THROTTLE_PWM_INSTANCE,
+                                           THROTTLE_PIN,
+                                           ESC_THROTTLE_PIN_NOT_USED,
+                                           ESC_THROTTLE_PIN_NOT_USED,
+                                           ESC_THROTTLE_PIN_NOT_USED);
+    APP_ERROR_CHECK(err_code);
+#endif
 
     err_code = rc_radio_receiver_init(RADIO_TIMER_INSTANCE,
                                           m_rc_radio_handler);

@@ -1,7 +1,14 @@
 # The PROJECT_NAME can be changed arbitrarily (it does not depend on anything).
 PROJECT_NAME := poly_rx
 
-SHAREDFLAGS := -DINVERT_ROLL=1
+SHAREDFLAGS := -DINVERT_ROLL=1 \
+	-DESC=1
+
+ifneq (,$(findstring -DESC=1,$(SHAREDFLAGS)))
+	SRC_FILES := $(PROJ_DIR)/../common/electronic_speed_controller.c
+else
+	SRC_FILES := $(PROJ_DIR)/../common/brushed_dc_motor.c
+endif
 
 # The LINKER_SCRIPT is usually in the same directory as the Makefile.
 LINKER_SCRIPT := poly_rx_gcc_nrf52.ld
@@ -130,7 +137,6 @@ SRC_FILES += \
 	$(SDK_ROOT)/components/drivers_nrf/uart/nrf_drv_uart.c \
 	$(PROJ_DIR)/main.c \
 	$(PROJ_DIR)/../common/radioshack_micro_servo.c \
-	$(PROJ_DIR)/../common/brushed_dc_motor.c \
 	$(PROJ_DIR)/../../rc_radio.c \
 	$(PROJ_DIR)/../common/utility.c \
 	$(SDK_ROOT)/external/segger_rtt/RTT_Syscalls_GCC.c \
