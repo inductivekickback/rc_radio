@@ -1,7 +1,7 @@
 #include "utility.h"
 
 
-inline uint8_t map(uint8_t value, uint32_t min, uint32_t max)
+inline uint32_t map(uint8_t value, uint32_t min, uint32_t max)
 {
     return (value * (max - min) / 100 + min);
 }
