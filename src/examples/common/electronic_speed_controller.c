@@ -15,7 +15,6 @@
 
 // The ideal servo range (in microseconds)
 #define ESC_MIN_VALUE      (1000UL)
-#define ESC_NEUTRAL_VALUE  (1500UL)
 #define ESC_MAX_VALUE      (2000UL)
 
 
@@ -82,7 +81,7 @@ uint32_t esc_throttle_group_init(esc_throttle_group_t * p_group,
 
     if (ESC_THROTTLE_PIN_NOT_USED != ch0_pin)
     {
-        p_group->pwm_values.channel_0 = (CH_ENABLED_MASK|ESC_NEUTRAL_VALUE);
+        p_group->pwm_values.channel_0 = (CH_ENABLED_MASK|ESC_MIN_VALUE);
     }
     else
     {
@@ -91,7 +90,7 @@ uint32_t esc_throttle_group_init(esc_throttle_group_t * p_group,
 
     if (ESC_THROTTLE_PIN_NOT_USED != ch1_pin)
     {
-        p_group->pwm_values.channel_1 = (CH_ENABLED_MASK|ESC_NEUTRAL_VALUE);
+        p_group->pwm_values.channel_1 = (CH_ENABLED_MASK|ESC_MIN_VALUE);
     }
     else
     {
@@ -100,7 +99,7 @@ uint32_t esc_throttle_group_init(esc_throttle_group_t * p_group,
 
     if (ESC_THROTTLE_PIN_NOT_USED != ch2_pin)
     {
-        p_group->pwm_values.channel_2 = (CH_ENABLED_MASK|ESC_NEUTRAL_VALUE);
+        p_group->pwm_values.channel_2 = (CH_ENABLED_MASK|ESC_MIN_VALUE);
     }
     else
     {
@@ -109,7 +108,7 @@ uint32_t esc_throttle_group_init(esc_throttle_group_t * p_group,
 
     if (ESC_THROTTLE_PIN_NOT_USED != ch3_pin)
     {
-        p_group->pwm_values.channel_3 = (CH_ENABLED_MASK|ESC_NEUTRAL_VALUE);
+        p_group->pwm_values.channel_3 = (CH_ENABLED_MASK|ESC_MIN_VALUE);
     }
     else
     {

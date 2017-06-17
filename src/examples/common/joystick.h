@@ -10,7 +10,12 @@
 #define JOYSTICK_H
 
 #include "stdint.h"
+
+#ifdef NRF52840_XXAA
+#include "nrf52840_bitfields.h"
+#else
 #include "nrf52_bitfields.h"
+#endif
 
 
 #define JOYSTICK_MIN_VALUE      (0UL)

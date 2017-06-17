@@ -2,11 +2,16 @@
 #define RC_RADIO_H
 
 #include "stdint.h"
-#include "nrf52_bitfields.h"
 
 
 // Any valid RADIO_TXPOWER_* values can be used.
+#ifdef NRF52840_XXAA
+#include "nrf52840_bitfields.h"
+#define RC_RADIO_TX_POWER         (RADIO_TXPOWER_TXPOWER_Pos8dBm)
+#else
+#include "nrf52_bitfields.h"
 #define RC_RADIO_TX_POWER         (RADIO_TXPOWER_TXPOWER_Pos4dBm)
+#endif
 #define RC_RADIO_BINDING_TX_POWER (RADIO_TXPOWER_TXPOWER_Neg12dBm)
 
 // This is the number of consecutive missed packets before the
