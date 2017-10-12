@@ -1,4 +1,4 @@
-The nrf_esb library in the [nRF5 SDK](http://developer.nordicsemi.com/nRF5_SDK/) provides a straightfoward path for developing proprietary protocols based on Nordic's [Enhanced ShockBurst](https://devzone.nordicsemi.com/blogs/783/intro-to-shockburstenhanced-shockburst/) link layer. In this project, the nrf_esb library is used to build a customizable remote control library for the nRF52 family of SoCs.
+The nrf_esb library in the [nRF5 SDK](http://developer.nordicsemi.com/nRF5_SDK/) provides a straightfoward path for developing proprietary protocols based on Nordic's [Enhanced ShockBurst](https://devzone.nordicsemi.com/blogs/783/intro-to-shockburstenhanced-shockburst/) link layer. In this project, the nrf_esb library is used to build a customizable remote control library for the nRF52 family of SoCs. It was originally created as part of an RC airplane build that is documented [here](http://inductivekickback.blogspot.com/2017/10/poly.html).
 
 ### Features
 The main features of the Remote Control Radio (rc_radio) library include:
